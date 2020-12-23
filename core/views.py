@@ -15,7 +15,7 @@ from .serializers import UserSerializer, AuctionDetailSerializer, AuctionListSer
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (permissions.AllowAny, )
+    permission_classes = (permissions.IsAuthenticated, )
 
 
 class AuctionViewSet(mixins.CreateModelMixin,
@@ -30,8 +30,8 @@ class AuctionViewSet(mixins.CreateModelMixin,
     def get_permission_classes(self):
         """Not Allow owner to place a bet"""
         if self.action == 'place_a_bet':
-            return permissions.AllowAny, IsNotOwner
-        return (permissions.AllowAny, )
+            return permissions.IsAuthenticated, IsNotOwner
+        return (permissions.IsAuthenticated, )
 
     def get_permissions(self):
         return [permission() for permission in self.get_permission_classes()]
