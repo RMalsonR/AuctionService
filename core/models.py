@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-# from core.tasks import auction_usages, close_auction
+from core.tasks import auction_usages, close_auction
 
 from AuctionService.settings import EMAIL_HOST_USER
 
@@ -58,26 +58,26 @@ class Bet(models.Model):
         verbose_name_plural = 'Bets'
 
 
-# @receiver(post_save, sender=Auction)
-# def post_save_auction_handler(sender, instance, *args, **kwargs):
-#     from_email = EMAIL_HOST_USER
-#     if instance._state.adding is True:
-#         all_emails = User.objects.exclude(id=instance.owner.id).values_list('email', flat=True)
-#         subject = 'New Auction!'
-#         message = 'Hi!\nYou received this email, because there is good news for you!\n' \
-#                   'Someone opened the new auction!\nHurry up! You need to place a bet!'
-#         to_emails = all_emails
-#         close_auction.apply_async(instance.id, eta=instance.created_at - instance.expire_at)
-#     else:
-#         if not instance.is_active:
-#             return
-#         to_emails = list(set(instance.all_bet.values_list('user__email', flat=True)))
-#         subject = 'New bet!'
-#         message = 'Hi!\nYou received this email, because someone placed a new bet' \
-#                   ' in auction that you interested in!\n' \
-#                   'Hurry up! You need to place a bet!'
-#     if to_emails:
-#         auction_usages.delay(subject, message, from_email, to_emails)
+@receiver(post_save, sender=Auction)
+def post_save_auction_handler(sender, instance, *args, **kwargs):
+    from_email = EMAIL_HOST_USER
+    if instance._state.adding is True:
+        all_emails = User.objects.exclude(id=instance.owner.id).values_list('email', flat=True)
+        subject = 'New Auction!'
+        message = 'Hi!\nYou received this email, because there is good news for you!\n' \
+                  'Someone opened the new auction!\nHurry up! You need to place a bet!'
+        to_emails = all_emails
+        close_auction.apply_async(instance.id, eta=instance.created_at - instance.expire_at)
+    else:
+        if not instance.is_active:
+            return
+        to_emails = list(set(instance.all_bet.values_list('user__email', flat=True)))
+        subject = 'New bet!'
+        message = 'Hi!\nYou received this email, because someone placed a new bet' \
+                  ' in auction that you interested in!\n' \
+                  'Hurry up! You need to place a bet!'
+    if to_emails:
+        auction_usages.delay(subject, message, from_email, to_emails)
 
 
 
