@@ -1,0 +1,20 @@
+# Django and Django rest
+Django==3.0
+djangorestframework-simplejwt==4.4.0
+django-cors-headers==3.6.0
+djangorestframework==3.12.2
+django-filter==2.4.0
+django-utils-six==2.0
+
+# Background tasks
+redis==3.4.1
+celery[redis]==4.3.0
+django-redis==4.10.0
+
+# Database
+psycopg2-binary>=2.8
+
+# Utils
+pyyaml==5.1
+pytz==2020.4
+django-rest-swagger==2.2.0

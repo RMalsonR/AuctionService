@@ -1,0 +1,48 @@
+version: "3.6"
+
+services:
+  postgres:
+    image: "postgres:9.6"
+    container_name: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_DB=auction
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postges
+    volumes:
+      - /var/lib/postgresql/data/
+
+  django:
+    build: .
+    container_name: django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/core
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  celery:
+    build: .
+    command: celery -A AuctionService worker -l INFO
+    volumes:
+      - .:/usr/src/core/
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+
+  redis:
+    image: "redis:alpine"
